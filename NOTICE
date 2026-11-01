@@ -6,9 +6,9 @@
 |---|---|---|
 | [JinShuXuan/dsh-context-budget](https://github.com/JinShuXuan/dsh-context-budget) | MIT | 记账 + 预算门的思路；固定前缀占比的测量方法 |
 | [Garbuzov/local-ai-dev-harness](https://github.com/Garbuzov/local-ai-dev-harness) | MIT | 每请求 token 开销的量级参照、预设层的组织方式 |
-| [claude-terse](https://github.com/) | MIT | 输出端压缩的对照数据（结论：总量收益有限） |
-| [context-mode](https://github.com/) | Elastic License 2.0 | 仅阅读其公开说明，未使用代码 |
-| [opencode-dcp](https://github.com/) | AGPL-3.0 | 仅阅读其公开说明，未使用代码 |
+| claude-terse | MIT | 输出端压缩的对照数据（结论：总量收益有限） |
+| context-mode | Elastic License 2.0 | 仅阅读其公开说明，未使用代码 |
+| opencode-dcp | AGPL-3.0 | 仅阅读其公开说明，未使用代码 |
 
 方法与数据来源：
 
@@ -16,3 +16,4 @@
 - 对照实验在本机 DSH headless（0.2.0-rc.1）+ deepseek-flash 上完成，脚本见 `bench/`。
 
 如果你的项目被引用但未列出，请提 issue。
+
