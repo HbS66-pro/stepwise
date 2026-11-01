@@ -1,0 +1,18 @@
+# NOTICE
+
+本仓库的代码为原创，MIT 许可。以下项目提供了思路参考，**没有复制其代码**：
+
+| 项目 | 许可 | 我们参考了什么 |
+|---|---|---|
+| [JinShuXuan/dsh-context-budget](https://github.com/JinShuXuan/dsh-context-budget) | MIT | 记账 + 预算门的思路；固定前缀占比的测量方法 |
+| [Garbuzov/local-ai-dev-harness](https://github.com/Garbuzov/local-ai-dev-harness) | MIT | 每请求 token 开销的量级参照、预设层的组织方式 |
+| [claude-terse](https://github.com/) | MIT | 输出端压缩的对照数据（结论：总量收益有限） |
+| [context-mode](https://github.com/) | Elastic License 2.0 | 仅阅读其公开说明，未使用代码 |
+| [opencode-dcp](https://github.com/) | AGPL-3.0 | 仅阅读其公开说明，未使用代码 |
+
+方法与数据来源：
+
+- 真实会话账单来自本机 DSH 的 `session_projcache`（34 个）与回收站归档（107 个），共 142 个会话，统计脚本见 `tools/`。
+- 对照实验在本机 DSH headless（0.2.0-rc.1）+ deepseek-flash 上完成，脚本见 `bench/`。
+
+如果你的项目被引用但未列出，请提 issue。

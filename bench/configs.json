@@ -1,0 +1,8 @@
+{
+  "c0": { "policy": null, "patch": [], "note": "基线：无任何规则" },
+  "c1": { "policy": "work.md", "patch": [], "note": "只加动作规则" },
+  "c2": { "policy": "rules.md", "patch": [], "note": "动作规则+输出规则" },
+  "c3": { "policy": null, "patch": [], "effort": "low", "note": "基线+低推理档" },
+  "c4": { "policy": null, "patch": ["lean.yml"], "note": "精简模式等价物：删 delegation 组+输出约定人设" },
+  "c5": { "policy": "rules.md", "patch": ["lean.yml"], "note": "精简模式+规则" }
+}

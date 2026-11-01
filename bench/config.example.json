@@ -1,0 +1,12 @@
+{
+  "dshBin": "C:/path/to/node_modules/@deepseek-ai/dsh/lib/bin.js",
+  "credentials": "C:/Users/you/.dsh/.credentials.yaml",
+  "profile": "bench",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "reasoningEffort": "max",
+  "homeRoot": "_homes",
+  "workRoot": "_work",
+  "resultsDir": "results",
+  "price": { "cacheHit": 0.003, "cacheMiss": 0.15, "output": 0.6 }
+}

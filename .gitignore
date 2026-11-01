@@ -1,0 +1,15 @@
+# 本地配置与产物
+bench/config.json
+bench/_homes/
+bench/_work/
+bench/results/
+
+# 真实会话数据不进仓库（含个人与第三方信息）
+data/*.json
+
+# 依赖
+node_modules/
+
+# 系统
+Thumbs.db
+.DS_Store
