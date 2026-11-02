@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect width="920" height="420" fill="#ffffff"/>
+  <text x="40" y="44" font-size="22" font-weight="700" fill="#1f2328">加规则前后，五类任务的中位费用</text>
+  <text x="40" y="68" font-size="13" fill="#59636e">milli-USD / 次任务 · 25 格对照实验 · 灰＝不加规则，绿＝加规则</text>
+
+  <!-- 轴：100 → 820 对应 0 → 33.55（最大） -->
+  <!-- 问答 -->
+  <text x="88" y="116" font-size="15" font-weight="600" fill="#1f2328" text-anchor="end">问答</text>
+  <rect x="100" y="98" width="559" height="18" rx="3" fill="#d0d7de"/>
+  <text x="666" y="112" font-size="13" fill="#59636e">4.60</text>
+  <rect x="100" y="120" width="86" height="18" rx="3" fill="#1a7f37"/>
+  <text x="194" y="134" font-size="13" font-weight="700" fill="#1a7f37">0.70　−85%</text>
+
+  <!-- 文档 -->
+  <text x="88" y="180" font-size="15" font-weight="600" fill="#1f2328" text-anchor="end">文档</text>
+  <rect x="100" y="162" width="512" height="18" rx="3" fill="#d0d7de"/>
+  <text x="619" y="176" font-size="13" fill="#59636e">4.20</text>
+  <rect x="100" y="184" width="294" height="18" rx="3" fill="#1a7f37"/>
+  <text x="402" y="198" font-size="13" font-weight="700" fill="#1a7f37">2.40　−43%</text>
+
+  <!-- 批量统计 -->
+  <text x="88" y="244" font-size="15" font-weight="600" fill="#1f2328" text-anchor="end">批量统计</text>
+  <rect x="100" y="226" width="453" height="18" rx="3" fill="#d0d7de"/>
+  <text x="560" y="240" font-size="13" fill="#59636e">3.70</text>
+  <rect x="100" y="248" width="356" height="18" rx="3" fill="#1a7f37"/>
+  <text x="464" y="262" font-size="13" font-weight="700" fill="#1a7f37">2.90　−22%</text>
+
+  <!-- 长任务 -->
+  <text x="88" y="308" font-size="15" font-weight="600" fill="#1f2328" text-anchor="end">长任务</text>
+  <rect x="100" y="290" width="720" height="18" rx="3" fill="#d0d7de"/>
+  <text x="827" y="304" font-size="13" fill="#59636e">33.55</text>
+  <rect x="100" y="312" width="442" height="18" rx="3" fill="#1a7f37"/>
+  <text x="550" y="326" font-size="13" font-weight="700" fill="#1a7f37">20.55　−39%</text>
+
+  <!-- 开放分析 -->
+  <text x="88" y="372" font-size="15" font-weight="600" fill="#1f2328" text-anchor="end">开放分析</text>
+  <rect x="100" y="354" width="248" height="18" rx="3" fill="#d0d7de"/>
+  <text x="355" y="368" font-size="13" fill="#59636e">11.50</text>
+  <rect x="100" y="376" width="119" height="18" rx="3" fill="#1a7f37"/>
+  <text x="226" y="390" font-size="13" font-weight="700" fill="#1a7f37">5.50　−52%</text>
+</svg>
