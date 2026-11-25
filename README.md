@@ -11,7 +11,7 @@
 | 文件 | 内容 | 用法 |
 |---|---|---|
 | [RULES-quick.md](RULES-quick.md) | 10 条精简规则 | 直接复制进 `AGENTS.md` 或 system prompt |
-| [RULES.md](RULES.md) | 完整版（12 条规则 + 4 条避坑项，附实测数据） | 想看每条规则的依据时翻 |
+| [RULES.md](RULES.md) | 完整版（15 条规则 + 4 条避坑项，附实测数据） | 想看每条规则的依据时翻 |
 | [SETUP.md](SETUP.md) | 输入端清理清单 | 交给 agent 照着精简一次环境配置（带确认与回滚） |
 | [bench/](bench/) | 6 配置 × 5 任务的测费脚本 | 想自己复测时跑（需 DSH） |
 
