@@ -1,121 +1,126 @@
 # stepwise
 
-**给 AI agent 省钱的规则集：一次少走一步，账单少三成。**
+一套给 AI agent 省 token 的指令规则和测费脚本。
 
-我们量了 142 个真实 agent 会话，结论很简单：一次会话的账单 ≈ **步数 ×（一次推理 + 一次全文重读）**。
+前阵子我统计了自己 142 个真实 agent 会话的账单，发现最费钱的其实不是模型话多。可见回答只占输出 token 的 5–10%，真正把账单拉高的是**工具调用步数**：每多走一步，就要把整段上下文按缓存价重读一遍，再做一次完整推理。把 10 次分散读写合并成 1 个脚本、把长文档改成一次写完，比让模型"回答简短一点"省得多。
 
-可见回答只占输出 token 的 5–10% —— 所以"写短"最多省个位数。省掉**一步**，省的是整份上下文重读加一整段推理。**杠杆在步数，不在字数。**
+我把这些做法收成 10 条可以直接贴进 `AGENTS.md` 或 system prompt 的规则，也在 5 类常见任务上跑了一遍前后对照。只加规则、不动工具配置、不换模型，五类任务加总中位费用降了 **43%**。
 
-这个仓不是插件、不是预置包、不需要安装。四样东西：
+仓库里放了四部分东西：
 
-| 文件 | 是什么 | 怎么用 |
+| 文件 | 内容 | 用法 |
 |---|---|---|
-| **[RULES-quick.md](RULES-quick.md)** | 10 条规则，全是能直接复制的句子 | 粘进 `AGENTS.md` / system prompt，下一轮就生效 |
-| **[RULES.md](RULES.md)** | 完整版：12 条规则 + 4 条禁手，每条带实测数字 | 想按证据逐条挑时读 |
-| **[SETUP.md](SETUP.md)** | 输入端一次性改造书 | 丢给你的 AI，让它照做（带询问、验收、回滚） |
-| **[bench/](bench/)** | 测量台：6 配置 × 5 任务 | 想验证"到底省多少"再跑，需 DSH |
+| [RULES-quick.md](RULES-quick.md) | 10 条精简规则 | 直接复制进 `AGENTS.md` 或 system prompt |
+| [RULES.md](RULES.md) | 完整版（12 条规则 + 4 条避坑项，附实测数据） | 想看每条规则的依据时翻 |
+| [SETUP.md](SETUP.md) | 输入端清理清单 | 交给 agent 照着精简一次环境配置（带确认与回滚） |
+| [bench/](bench/) | 6 配置 × 5 任务的测费脚本 | 想自己复测时跑（需 DSH） |
 
-## 一眼看效果
+## 直接上手
 
-同一批任务，只往指令里加规则前后的中位费用（milli-USD，千分之一美元 / 次任务）：
+不需要装插件，也不用配 API key。把 [RULES-quick.md](RULES-quick.md) 里的 10 行粘进你的 agent 指令文件就能用。
 
-| 任务 | 不加规则 | 加规则 | 变化 |
-|---|---|---|---|
-| 问答 | 4.60 | **0.70** | **−85%** |
-| 文档 | 4.20 | 2.40 | −43% |
+其中省得最多的三条是：
+
+1. **能一次做完的事别拆多步**：遍历目录、处理十来个文件、连跑几条命令，优先写个小脚本或拼成一条命令一次跑完。
+2. **长文档一次 `write` 写全，修改尽量一次 `edit` 改完**：实测同一篇长文档，1 次写入只走 4 步，拆成 20 次零碎写入走了 50 步。
+3. **查过的文件和写过的脚本别反复重来**：环境信息记进档案，要复用的脚本留着，不要每轮重新探查或整文件重写。
+
+## 前后对照数据
+
+同一批任务，只往指令里加这套规则前后的中位费用（单位 milli-USD，千分之一美元 / 次任务）：
+
+| 任务类型 | 不加规则 | 加规则 | 变化 |
+|---|---:|---:|---:|
+| 问答 | 4.60 | 0.70 | −85% |
+| 文档写作 | 4.20 | 2.40 | −43% |
 | 批量统计（20 个文件） | 3.70 | 2.90 | −22% |
-| 长任务（24–46 步） | 33.55 | **20.55** | **−39%** |
-| 开放分析 | 11.50 | **5.50** | **−52%** |
-
-按这五类任务的量加总，**整张账单降 43%**。只加规则、不改工具、不换模型。
+| 长任务（24–46 步） | 33.55 | 20.55 | −39% |
+| 开放分析 | 11.50 | 5.50 | −52% |
 
 ![加规则前后五类任务的中位费用](assets/results.svg)
 
-样本 1–7 次/格，只报中位数；完整 25 格对照与口径见 [bench/README.md](bench/README.md)。
+注：每格有效样本 1–7 次，这里只报中位数；25 格完整数据和空跑判定口径见 [bench/README.md](bench/README.md)。
 
-## 30 秒上手（不需要安装）
+## 为什么省步数比省字数划算
 
-把 [RULES-quick.md](RULES-quick.md) 的 10 行粘进你的 agent 指令就完了。没有依赖、没有配置、没有 API key 要填。
-
-最值钱的三条：
-
-1. **一次调用做完一件事** —— 10 个文件、3 个命令、2 个搜索，写一个脚本或发一条命令，别拆成 10 次工具调用。
-2. **长文档一次 `write` 写全**，改就用一次 `edit` 改完。实测：1 次写入 = 4 步，20 次写入 = 50 步。
-3. **同一件事不重复做** —— 文件不无理由重写，环境不反复探查，要复用的脚本留着。
-
-## 为什么这几条能省钱
-
-每走一步，提示词前缀（系统提示 + 工具表 + 常驻技能 + AGENTS.md + 整段历史）都会按缓存价重读一遍。142 个会话的账单拆开是这样：
+Agent 每执行一步，系统提示、工具定义、常驻技能、`AGENTS.md` 和此前的全部对话历史都会再送进模型一次。把我那 142 个真实会话的费用拆开看，结构是这样的：
 
 ![账单三分：输出 44%、上下文重读 34%、未命中输入 22%](assets/bill.svg)
 
-重读:输出 = **153 : 1**。缓存价再便宜 50 倍，也被这个倍数量吃掉了三分之一的账单。所以：
+上下文重读量和输出量的比例高达 **153 : 1**。哪怕缓存命中价便宜 50 倍，靠步数叠起来依然吃掉三分之一的账单。所以：
 
-- 输出端"写短"有天花板：可见回答只占输出 token 的 5–10%。
-- 输入端也有天花板：固定税只占每步输入的约 12%。
-- **真正能动的是步数**：少一步 = 少一次推理 + 少一次全文重读。
+- 压回答字数天花板很低，因为最终回复只占全部输出 token 的 5–10%（大头在推理和工具调用参数里）。
+- 精简系统提示也有上限，固定前缀在每步输入里只占约 12%。
+- 减少不必要的来回步数，才能同时把推理输出和全文重读一起砍下来。
 
-## 我们证明了什么是错的
+## 几个实测下来效果不好（甚至更贵）的做法
 
-省 token 圈子流传的三种做法，我们用自己的账单验了一遍，都不成立：
+网上常见的几种省 token 技巧我也顺手测了一遍，至少在我的任务集上收益不明显：
 
-- **"默认不建文件"是错的靶子。** 同一条文档任务，带这句禁令比不带贵 **36%**——模型每步都在判断"这算不算那三种例外"。真正的浪费在中间稿和反复重写的脚手架：抽查 22 个会话，1,664 次写入、581 个文件，单个构建脚本被写 **51 次**。
-- **删工具不省钱。** 删掉整个 delegation 组（子代理/workflow/ralph），四类任务合计约 0 收益（问答 −26%、文档 +36%、批量 0%、长任务 −13%）。
-- **写短不是主杠杆。** 把答案砍半，多步任务的总费只降个位数。
+- **硬规定"默认不建文件"**：同一条文档任务，加上这条禁令反而贵了 **36%**，因为模型每一步都在反复琢磨当前任务算不算例外。实际浪费大头是频繁重写中间脚手架。抽查 22 个历史会话，总共 1,664 次写入、581 个文件，单个构建脚本最多被反复写了 **51 次**。
+- **删掉整个子代理 / workflow 工具组**：在四类任务上合计几乎没省钱（问答 −26%、文档 +36%、批量统计 0%、长任务 −13%）。
+- **只压最终回复长度**：把回答字数砍半，多步任务的总花费只降了个位数。
 
-## 想验证？跑你自己的净额表（需 DSH）
+## 复测脚本与历史账单统计（DSH 专用）
+
+如果你也在用 DSH，可以跑一遍测量台，或者直接扫自己的本地历史会话：
 
 ```bash
 git clone https://github.com/HbS66-pro/stepwise && cd stepwise
-cp bench/config.example.json bench/config.json      # 填 dshBin 和 credentials 路径
-node bench/setup.mjs                                # 建 6 个隔离 DSH_HOME
+cp bench/config.example.json bench/config.json      # 填入 dshBin 和 credentials 路径
+node bench/setup.mjs                                # 建立 6 个隔离的 DSH_HOME
 node bench/run.mjs --configs c0,c2 --tasks t1,t2 --runs 3
-node bench/report.mjs                               # 出净额表
+node bench/report.mjs                               # 输出净额对照表
 ```
 
-`bench/` 对每个配置建独立 `DSH_HOME`，用 `dsh --profile <p> --json` 跑固定任务，逐次记录步数、输出 token、缓存重读、未命中输入、工具调用、写入次数、返工次数、落盘字节、耗时。三个已经踩过的坑（cwd 进系统提示、冷缓存差 50 倍、预热必须分配置做）都在实现里处理掉了，见 [bench/README.md](bench/README.md)。
+`bench/` 已经处理了几个容易影响结果的变量（工作目录变化导致前缀缓存失效、冷热缓存单价差 50 倍、各配置需要单独预热），细节见 [bench/README.md](bench/README.md)。
 
-不跑实验、只想看自己的历史会话花了多少：
+只想看自己过去花在哪、不想跑对照实验的话，直接运行 `tools/` 下的只读脚本：
 
 ```bash
-DSH_HOME=~/.dsh node tools/output-report.mjs   # 账单三分
-DSH_HOME=~/.dsh node tools/fixed-tax.mjs       # 每步固定税
-DSH_HOME=~/.dsh node tools/session-stats.mjs   # 落盘/返工/工具结果体量
+DSH_HOME=~/.dsh node tools/output-report.mjs   # 输出 / 缓存重读 / 未命中三项占比
+DSH_HOME=~/.dsh node tools/fixed-tax.mjs       # 每步固定前缀开销
+DSH_HOME=~/.dsh node tools/session-stats.mjs   # 落盘、重写和工具返回体量统计
 ```
 
-## 适用范围（先看边界）
+## 数据边界与局限
 
-- **规则与厂商无关**：成本结构在所有主流 agent 上都成立。但**实验数据全部在 DSH + deepseek-flash 上测得**，别的 harness 只能参考比例，不能搬绝对金额。
-- **样本很薄**：1–7 次/格，长任务只有 2 次。只报中位数和范围，不报均值。
-- **没覆盖**：200 步以上的超长会话、多 agent 协作、非中文任务。
-- **价格**：cacheHit 0.003 / cacheMiss 0.15 / output 0.6（美元/百万 token），闲时价；峰时翻倍，占比不变。
-- **DSH 专属**：`bench/` 和 `tools/` 只跑在 DSH 上；`RULES*.md` 和 `SETUP.md` 与 harness 无关。
+- **测试环境单一**：规则本身不挑工具，但文中的所有费用数据都是在 **DSH + deepseek-flash** 上测出来的。换其他 agent 或模型，绝对金额不能直接照搬，只能参考大致比例。
+- **样本量不大**：每格 1–7 次，其中长任务样本只有 2 次，所以只报中位数和范围，不报均值。
+- **未覆盖场景**：超过 200 步的超长会话、多 agent 协作以及纯英文任务还没有测。
+- **计价口径**：按闲时单价换算（cacheHit 0.003 / cacheMiss 0.15 / output 0.6 美元每百万 token）；峰时整体翻倍，各项占比不变。
+- **脚本依赖**：`bench/` 和 `tools/` 依赖 DSH 的日志格式；`RULES-quick.md`、`RULES.md` 和 `SETUP.md` 任何 agent 都能直接用。
 
-## 仓库结构
+## 目录结构
 
+```text
+RULES-quick.md   10 条精简规则，直接复制使用
+RULES.md         完整规则、避坑项与实测依据
+SETUP.md         输入端一次性清理说明（可交给 AI 执行）
+bench/           对照测量台（setup / run / report、配置与任务集）
+tools/           DSH 本地历史会话只读统计脚本
+docs/            早期立项与路线记录
+data/            统计口径说明（不含真实会话日志）
+assets/          README 用到的两张 SVG 图
 ```
-RULES-quick.md   10 条规则，复制即用
-RULES.md         完整规则 + 禁手，每条带依据
-SETUP.md         输入端一次性改造书（给 AI 执行）
-bench/           测量台：run/setup/report + 配置 + 任务 + 规则文本
-tools/           历史会话账单脚本（DSH 专用，只读）
-docs/            项目定义与路线（早期文档，当背景读）
-data/            口径说明，不含真实数据
-assets/          README 里的图
-```
 
-## 隐私
+## 隐私说明
 
-仓库里**没有任何真实会话数据**。以下只在本地存在，都在 `.gitignore` 里：`bench/config.json`、`bench/results/`、`bench/_homes/`、`bench/_work/`、`data/*.json`。
+仓库里不包含任何真实会话记录。`bench/config.json`、`bench/results/`、`bench/_homes/`、`bench/_work/` 和 `data/*.json` 均已加入 `.gitignore`。注意 `bench/_homes/*/.credentials.yaml` 里有凭据副本，打包分享本地目录时别带上。
 
-`bench/_homes/*/.credentials.yaml` 是凭据副本——**不要把整个目录打包上传**。
+---
 
-## English
+## English Summary
 
-**Cutting steps, not words, is the lever.** An agent session's bill ≈ steps × (one reasoning pass + one full-context reread). Visible answers are only 5–10% of output tokens, so "write shorter" saves single digits; removing a step saves a whole input reread plus a whole reasoning pass.
+After analyzing 142 of my own agent sessions (DSH + `deepseek-flash`), I found that visible replies only account for 5–10% of output tokens. Most of the bill comes from the **number of tool-call steps**, because every extra step triggers another reasoning pass and re-reads the entire conversation context (cached reread vs. output ratio was 153:1).
 
-Not a plugin, not a preset pack. It is: [RULES-quick.md](RULES-quick.md) (10 copy-paste rules), [RULES.md](RULES.md) (full rules + anti-patterns, each backed by measurements), [SETUP.md](SETUP.md) (a one-time input-side cleanup guide for an AI to execute), and [bench/](bench/) (a reproducible benchmark).
+This repo collects:
 
-Measured on 142 real sessions (DSH + deepseek-flash) and 25 benchmark cells over 5 task types: adding the rules cut the bill by **43%** in aggregate, from −85% (Q&A) to −22% (batch stats). Best value comes from reducing the **number of tool-call steps** — 1 write instead of 20 edits; one script instead of ten file reads.
+- [RULES-quick.md](RULES-quick.md): 10 rules you can paste directly into `AGENTS.md` or a system prompt (no install required).
+- [RULES.md](RULES.md): the full rule set plus 4 practices that did not help in testing, with measured numbers.
+- [SETUP.md](SETUP.md): a one-time context/input cleanup checklist an agent can run for you.
+- [bench/](bench/) and [tools/](tools/): benchmark and log-analysis scripts for DSH.
 
-MIT. See [NOTICE](NOTICE) for prior art.
+Across 5 task types (25 benchmark cells, 1–7 runs per cell), adding the rules alone reduced median aggregate cost by **43%** (from −85% on Q&A to −22% on 20-file batch stats). The biggest gains come from batching file/shell work into single calls, writing long documents in one pass, and avoiding repeated re-reads or rewrites.
+
+Licensed under MIT. Prior art is noted in [NOTICE](NOTICE).
